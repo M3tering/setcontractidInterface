@@ -15,8 +15,10 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.0.11",
+    "@radix-ui/react-alert-dialog": "^1.1.0",
     "@rainbow-me/rainbowkit": "2.1.2",
     "@tanstack/react-query": "^5.28.6",
+    "@tokenbound/sdk": "^0.5.4",
     "@uniswap/sdk-core": "^4.0.1",
     "@uniswap/v2-sdk": "^3.0.1",
     "blo": "^1.0.1",

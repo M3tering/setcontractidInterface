@@ -79,8 +79,20 @@ module.exports = {
       boxShadow: {
         center: "0 0 12px -2px rgb(0 0 0 / 0.05)",
       },
+      keyframes: {
+        overlayShow: {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        contentShow: {
+          from: { opacity: "0", transform: "translate(-50%, -48%) scale(0.96)" },
+          to: { opacity: "1", transform: "translate(-50%, -50%) scale(1)" },
+        },
+      },
       animation: {
         "pulse-fast": "pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        overlayShow: "overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        contentShow: "contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)",
       },
     },
   },
