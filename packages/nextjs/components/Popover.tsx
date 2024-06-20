@@ -28,7 +28,7 @@ function Popover({ children, token }: PopoverProps) {
       walletClient: walletClient as any,
       chainId: gnosis.id,
     });
-  }, [walletClient, gnosis.id]);
+  }, [walletClient]);
 
   useEffect(() => {
     (() => {
