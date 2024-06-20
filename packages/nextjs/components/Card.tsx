@@ -6,7 +6,7 @@ function Card({ token }: { token: Token }) {
   return (
     <Popover token={token}>
       <div
-        className={`xl:w-[300px] relative bg-neutral-900/50 xl:h-[350px] 2xl:w-[300px] 2xl:h-[350px] lg:w-[300px] lg:h-[350px] md:w-[300px] px-3 md:h-[350px] w-[300px] h-[300px] rounded-lg`}
+        className={`xl:w-[300px] cursor-pointer relative bg-neutral-900/50 xl:h-[350px] 2xl:w-[300px] 2xl:h-[350px] lg:w-[300px] lg:h-[350px] md:w-[300px] px-3 md:h-[350px] w-[300px] h-[300px] rounded-lg`}
       >
         {token.image && (
           <Image src={token.image} alt="nft" width={270} height={200} className={`w-[270px] h-[200px] block mx-auto`} />
