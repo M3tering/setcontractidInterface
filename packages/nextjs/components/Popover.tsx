@@ -104,8 +104,8 @@ function Popover({ children, token }: PopoverProps) {
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="bg-neutral-900/90 backdrop-filter backdrop-blur data-[state=open]:animate-overlayShow fixed inset-0" />
         <AlertDialog.Content className="data-[state=open]:animate-contentShow space-y-3 fixed top-[50%] dark:bg-neutral-800 bg-white left-[50%] max-h-[85vh] lg:h-[430px] md:h-[420px] h-[400px] lg:w-[400px] md:w-[350px] w-[300px] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
-          <AlertDialog.Title className="dark:text-white text-black m-0 text-[17px] font-bold text-center">
-            Action
+          <AlertDialog.Title className="dark:text-white text-black m-0 text-[16px] font-semibold text-center">
+            Set the Arweave ContractId for M3ter #{Number(token.id)}
           </AlertDialog.Title>
           <AlertDialog.Cancel asChild>
             <button
@@ -141,9 +141,9 @@ function Popover({ children, token }: PopoverProps) {
               type="button"
               className={`bg-[#385183] h-[35px] flex hover:opacity-[0.7] disabled:opacity-[0.5] justify-center items-center w-[120px] rounded-[6px] mx-auto`}
             >
-              Set Contract ID
+              Set
             </button>
-            <p className={`absolute top-1 right-1 font-extrabold text-[17px]`}>#{Number(token.id)}</p>
+            {/* <p className={`absolute top-1 right-1 font-extrabold text-[17px]`}>#{Number(token.id)}</p> */}
           </div>
 
           <AlertDialog.Action />
