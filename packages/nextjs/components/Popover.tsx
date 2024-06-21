@@ -10,19 +10,24 @@ import { createWalletClient, custom, http } from "viem";
 import { gnosis } from "viem/chains";
 import { useWriteContract } from "wagmi";
 import { Token } from "~~/actions/m3ters";
+import { PublicClient } from "~~/config/clients";
 
 interface PopoverProps {
   children: React.ReactNode;
   token: Token;
 }
 function Popover({ children, token }: PopoverProps) {
-  //const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("Protocol");
   const { writeContract } = useWriteContract();
   const [tokenBoundAccount, setTokenBoundAccount] = useState("");
-  const walletClient = createWalletClient({
-    chain: gnosis,
-    transport: window.ethereum ? custom(window.ethereum) : http(),
-  });
+  const [contractId, setContractId] = useState("");
+  const walletClient = useMemo(
+    () =>
+      createWalletClient({
+        chain: gnosis,
+        transport: window.ethereum ? custom(window.ethereum) : http(),
+      }),
+    [],
+  );
   const tokenBoundClient = useMemo(() => {
     return new TokenboundClient({
       walletClient: walletClient as any,
@@ -39,18 +44,40 @@ function Popover({ children, token }: PopoverProps) {
       setTokenBoundAccount(_tokenBoundAccount);
     })();
   }, [tokenBoundClient, token.id]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const _contractId = await PublicClient.readContract({
+          functionName: "contractByToken",
+          address: "0x2b3997D82C836bd33C89e20fBaEF96CA99F1B24A",
+          abi: ABI,
+          args: [token.id],
+        });
+        console.log(_contractId);
+        setContractId(_contractId as string);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [token.id]);
+
   const handleClick = async () => {
     try {
       writeContract({
         functionName: "_setContractId",
         address: "0x2b3997D82C836bd33C89e20fBaEF96CA99F1B24A",
         abi: ABI,
+        account: tokenBoundAccount,
         args: [token.id, tokenBoundAccount],
       });
     } catch (e) {
       console.error(e);
       // throw e;
     }
+  };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setContractId(value);
   };
   return (
     <AlertDialog.Root>
@@ -83,16 +110,17 @@ function Popover({ children, token }: PopoverProps) {
             <input
               name="contractId"
               type="text"
-              disabled
-              defaultValue={tokenBoundAccount}
+              onChange={handleChange}
+              value={contractId}
+              // defaultValue={contractId}
               className={`w-[90%] block mx-auto outline-none text-black dark:border-0 border px-2 bg-white h-[40px] rounded-[6px]`}
               placeholder="Enter your contract ID"
             />
             <button
-              disabled={!tokenBoundAccount}
+              disabled={!contractId}
               onClick={handleClick}
               type="button"
-              className={`bg-[#385183] h-[35px] flex hover:opacity-[0.7] justify-center items-center w-[120px] rounded-[6px] mx-auto`}
+              className={`bg-[#385183] h-[35px] flex hover:opacity-[0.7] disabled:opacity-[0.5] justify-center items-center w-[120px] rounded-[6px] mx-auto`}
             >
               Set Contract ID
             </button>

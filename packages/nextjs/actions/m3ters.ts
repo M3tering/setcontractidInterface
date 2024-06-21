@@ -36,6 +36,7 @@ export async function tokenOfOwnerByIndex({ owner }: { owner: string }): Promise
     for (let index = 0; index < balance; index++) {
       const id = await PublicClient.readContract({
         address: M3tersAddress,
+
         abi: M3tersABI,
         functionName: "tokenOfOwnerByIndex",
         args: [owner, index],
