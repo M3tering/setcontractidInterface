@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import ABI from "../ABI/abi.json";
+import { notification } from "../utils/scaffold-eth/notification";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { TokenboundClient } from "@tokenbound/sdk";
 import { IoCloseOutline } from "react-icons/io5";
 import { createWalletClient, custom, http } from "viem";
+import { encodeFunctionData } from "viem";
 import { gnosis } from "viem/chains";
-import { useWriteContract } from "wagmi";
 import { Token } from "~~/actions/m3ters";
 import { PublicClient } from "~~/config/clients";
 
@@ -17,8 +18,8 @@ interface PopoverProps {
   token: Token;
 }
 function Popover({ children, token }: PopoverProps) {
-  const { writeContract } = useWriteContract();
   const [tokenBoundAccount, setTokenBoundAccount] = useState("");
+  const [open, setOpen] = useState(false);
   const [contractId, setContractId] = useState("");
   const walletClient = useMemo(
     () =>
@@ -36,12 +37,14 @@ function Popover({ children, token }: PopoverProps) {
   }, [walletClient]);
 
   useEffect(() => {
-    (() => {
-      const _tokenBoundAccount = tokenBoundClient.getAccount({
-        tokenContract: "0x2b3997D82C836bd33C89e20fBaEF96CA99F1B24A",
-        tokenId: String(token.id),
+    (async () => {
+      const _tokenBoundAccount = await PublicClient.readContract({
+        functionName: "m3terAccount",
+        abi: ABI,
+        address: "0x2b3997D82C836bd33C89e20fBaEF96CA99F1B24A",
+        args: [token.id],
       });
-      setTokenBoundAccount(_tokenBoundAccount);
+      setTokenBoundAccount(_tokenBoundAccount as string);
     })();
   }, [tokenBoundClient, token.id]);
   useEffect(() => {
@@ -61,15 +64,37 @@ function Popover({ children, token }: PopoverProps) {
     })();
   }, [token.id]);
 
+  //encode _setcontractId function
+  const encodedSetContractIdFuctionData = encodeFunctionData({
+    abi: ABI,
+    functionName: "_setContractId",
+    args: [token.id, contractId],
+  });
+
   const handleClick = async () => {
     try {
-      writeContract({
-        functionName: "_setContractId",
-        address: "0x2b3997D82C836bd33C89e20fBaEF96CA99F1B24A",
-        abi: ABI,
-        account: tokenBoundAccount,
-        args: [token.id, tokenBoundAccount],
+      notification.loading(<p>Executing transaction</p>, {
+        position: "top-center",
       });
+      const txhash = await tokenBoundClient.execute({
+        account: tokenBoundAccount as `0x${string}`,
+        to: "0x2b3997D82C836bd33C89e20fBaEF96CA99F1B24A",
+        value: BigInt(0),
+        data: encodedSetContractIdFuctionData,
+      });
+      const reciept = await PublicClient.waitForTransactionReceipt({
+        hash: txhash,
+      });
+      if (reciept.status === "reverted") {
+        notification.error(<p className={`text-red-500`}>Transaction Failed</p>, {
+          duration: 10,
+        });
+        throw Error("Tx reverted");
+      }
+
+      notification.success(<p className={`text-green-500`}>Transaction Successfull</p>);
+      setOpen(false);
+      setContractId("");
     } catch (e) {
       console.error(e);
       // throw e;
@@ -80,7 +105,7 @@ function Popover({ children, token }: PopoverProps) {
     setContractId(value);
   };
   return (
-    <AlertDialog.Root>
+    <AlertDialog.Root open={open} onOpenChange={setOpen}>
       <AlertDialog.Trigger asChild>{children}</AlertDialog.Trigger>
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="bg-neutral-900/90 backdrop-filter backdrop-blur data-[state=open]:animate-overlayShow fixed inset-0" />
