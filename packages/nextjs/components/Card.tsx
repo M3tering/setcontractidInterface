@@ -9,9 +9,6 @@ function Card({ token }: { token: Token }) {
       >
         {token.image && <img src={token.image} alt="nft" width={270} className={`w-[270px]  block mx-auto`} />}
         <p className={`text-[18px] font-[600] dark:text-white text-white`}>{token.name}</p>
-        <p className={`w-[97%] break-words italic text-[12px] font-thin text-slate-400 dark:text-neutral-400`}>
-          {token.description}
-        </p>
         <p className={`absolute bottom-0 right-3 text-[16px] text-white font-bold`}>#{Number(token.id)}</p>
       </div>
     </Popover>
