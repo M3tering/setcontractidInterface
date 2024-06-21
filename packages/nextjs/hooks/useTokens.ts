@@ -4,9 +4,9 @@ import { Token, fetchTokens } from "~~/actions/m3ters";
 
 function useTokens() {
   const [tokens, setTokens] = useState<Token[] | undefined>(undefined);
-  const { address: connectedAddress } = useAccount();
+  const { address: connectedAddress, isConnected } = useAccount();
   useEffect(() => {
-    if (connectedAddress) {
+    if (isConnected && connectedAddress) {
       (async () => {
         const tokens = await fetchTokens({
           user: connectedAddress, //"0xDC2a4bF46Ef158f86274C02Bd7f027f31Da9EbC1"
@@ -15,7 +15,7 @@ function useTokens() {
         setTokens(tokens);
       })();
     }
-  }, [connectedAddress]);
+  }, [connectedAddress, isConnected]);
   return tokens;
 }
 
