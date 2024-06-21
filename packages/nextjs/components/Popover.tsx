@@ -30,7 +30,7 @@ function Popover({ children, token }: PopoverProps) {
         chain: gnosis,
         transport: window.ethereum ? custom(window.ethereum) : http(),
       }),
-    [],
+    [connectedAddress],
   );
   const tokenBoundClient = useMemo(() => {
     return new TokenboundClient({
