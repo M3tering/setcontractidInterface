@@ -10,6 +10,7 @@ import { IoCloseOutline } from "react-icons/io5";
 import { createWalletClient, custom, http } from "viem";
 import { encodeFunctionData } from "viem";
 import { gnosis } from "viem/chains";
+import { useAccount } from "wagmi";
 import { Token } from "~~/actions/m3ters";
 import { PublicClient } from "~~/config/clients";
 
@@ -18,12 +19,14 @@ interface PopoverProps {
   token: Token;
 }
 function Popover({ children, token }: PopoverProps) {
+  const { address: connectedAddress } = useAccount();
   const [tokenBoundAccount, setTokenBoundAccount] = useState("");
   const [open, setOpen] = useState(false);
   const [contractId, setContractId] = useState("");
   const walletClient = useMemo(
     () =>
       createWalletClient({
+        account: connectedAddress,
         chain: gnosis,
         transport: window.ethereum ? custom(window.ethereum) : http(),
       }),
@@ -73,22 +76,23 @@ function Popover({ children, token }: PopoverProps) {
 
   const handleClick = async () => {
     try {
-      notification.loading(<p>Executing transaction</p>, {
+      const loading = notification.loading(<p>Executing transaction</p>, {
         position: "top-center",
       });
+
       const txhash = await tokenBoundClient.execute({
         account: tokenBoundAccount as `0x${string}`,
         to: "0x2b3997D82C836bd33C89e20fBaEF96CA99F1B24A",
         value: BigInt(0),
         data: encodedSetContractIdFuctionData,
       });
+
       const reciept = await PublicClient.waitForTransactionReceipt({
         hash: txhash,
       });
+      notification.remove(loading);
       if (reciept.status === "reverted") {
-        notification.error(<p className={`text-red-500`}>Transaction Failed</p>, {
-          duration: 10,
-        });
+        notification.error(<p className={`text-red-500`}>Transaction Failed</p>);
         throw Error("Tx reverted");
       }
 
