@@ -7,10 +7,9 @@ import { notification } from "../utils/scaffold-eth/notification";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { TokenboundClient } from "@tokenbound/sdk";
 import { IoCloseOutline } from "react-icons/io5";
-import { createWalletClient, custom, http } from "viem";
 import { encodeFunctionData } from "viem";
 import { gnosis } from "viem/chains";
-import { useAccount } from "wagmi";
+import { useWalletClient } from "wagmi";
 import { Token } from "~~/actions/m3ters";
 import { PublicClient } from "~~/config/clients";
 
@@ -19,19 +18,12 @@ interface PopoverProps {
   token: Token;
 }
 function Popover({ children, token }: PopoverProps) {
-  const { address: connectedAddress } = useAccount();
   const [tokenBoundAccount, setTokenBoundAccount] = useState("");
   const [open, setOpen] = useState(false);
   const [contractId, setContractId] = useState("");
-  const walletClient = useMemo(
-    () =>
-      createWalletClient({
-        account: connectedAddress,
-        chain: gnosis,
-        transport: window.ethereum ? custom(window.ethereum) : http(),
-      }),
-    [connectedAddress],
-  );
+
+  const { data: walletClient } = useWalletClient();
+
   const tokenBoundClient = useMemo(() => {
     return new TokenboundClient({
       walletClient: walletClient as any,
@@ -75,11 +67,8 @@ function Popover({ children, token }: PopoverProps) {
   });
 
   const handleClick = async () => {
+    const loading = notification.loading(<p>Executing transaction</p>);
     try {
-      const loading = notification.loading(<p>Executing transaction</p>, {
-        position: "top-center",
-      });
-
       const txhash = await tokenBoundClient.execute({
         account: tokenBoundAccount as `0x${string}`,
         to: "0x2b3997D82C836bd33C89e20fBaEF96CA99F1B24A",
@@ -90,17 +79,18 @@ function Popover({ children, token }: PopoverProps) {
       const reciept = await PublicClient.waitForTransactionReceipt({
         hash: txhash,
       });
-      notification.remove(loading);
+
       if (reciept.status === "reverted") {
-        notification.error(<p className={`text-red-500`}>Transaction Failed</p>);
         throw Error("Tx reverted");
       }
-
+      notification.remove(loading);
       notification.success(<p className={`text-green-500`}>Transaction Successfull</p>);
       setOpen(false);
       setContractId("");
     } catch (e) {
-      console.error(e);
+      notification.remove(loading);
+      notification.error(<p className={`text-red-500`}>Transaction Failed</p>);
+      console.error("failed tx:", e);
       // throw e;
     }
   };
