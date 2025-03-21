@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import ABI from "../ABI/abi.json";
@@ -8,7 +8,7 @@ import { notification } from "../utils/scaffold-eth/notification";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { TokenboundClient } from "@tokenbound/sdk";
 import { IoCloseOutline } from "react-icons/io5";
-import { encodeFunctionData } from "viem";
+import { encodeFunctionData, parseEther } from "viem";
 import { gnosis } from "viem/chains";
 import { useWalletClient } from "wagmi";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/20/solid";
@@ -77,11 +77,11 @@ function Popover({ children, token, contractId: _contractId, tariff: _tariff }: 
         setOpen(false);
         setContractId("");
       }
-      if(tariff && _tariff !== tariff) {
+      if (tariff && _tariff !== tariff) {
         const encodedSetTariffFuctionData = encodeFunctionData({
           abi: ABI,
           functionName: "_setTariff",
-          args: [token.id, tariff],
+          args: [token.id, parseEther(tariff, "wei")],
         });
         const tariffHash = await tokenBoundClient.execute({
           account: tokenBoundAccount as `0x${string}`,
@@ -108,8 +108,8 @@ function Popover({ children, token, contractId: _contractId, tariff: _tariff }: 
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, name } = e.target;
-    if(name === 'tariff') setTariff(value);
-    if (name === 'contractId') setContractId(value);
+    if (name === "tariff") setTariff(value);
+    if (name === "contractId") setContractId(value);
   };
   return (
     <AlertDialog.Root open={open} onOpenChange={setOpen}>
