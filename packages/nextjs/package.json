@@ -21,6 +21,7 @@
     "@tokenbound/sdk": "^0.5.4",
     "@uniswap/sdk-core": "^4.0.1",
     "@uniswap/v2-sdk": "^3.0.1",
+    "axios": "^1.8.4",
     "blo": "^1.0.1",
     "burner-connector": "^0.0.8",
     "daisyui": "4.5.0",
