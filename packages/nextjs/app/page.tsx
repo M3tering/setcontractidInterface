@@ -11,15 +11,11 @@ const Home: NextPage = () => {
   const { isConnected } = useAccount();
   const tokens = useTokens();
   if (isConnected) {
-    if (tokens) {
+    if (tokens && tokens.length > 0) {
       return <Tokenlist tokens={tokens} />;
     } else
       return (
-        <div className="grid lg:grid-cols-4 gap-y-2 md:grid-cols-3 grid-cols-1 w-full h-full pt-10 px-[20px]">
-          <Skeleton />
-          <Skeleton />
-          <Skeleton />
-        </div>
+        <div>Loading ....</div>
       );
   } else return <NotConnected />;
 };

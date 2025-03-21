@@ -14,6 +14,12 @@ export type Token = {
   id: number;
 };
 
+export type TokenList = {
+  status: boolean,
+  tokens: Array<Token>,
+  error: any
+}
+
 export async function balanceOf({ address }: { address: string }): Promise<any> {
   try {
     const data = await PublicClient.readContract({

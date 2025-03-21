@@ -8,11 +8,15 @@ function useTokens() {
   useEffect(() => {
     if (isConnected && connectedAddress) {
       (async () => {
-        const tokens = await fetchTokens({
-          user: connectedAddress, //"0xDC2a4bF46Ef158f86274C02Bd7f027f31Da9EbC1", //
-        });
-        console.log("tokens", tokens);
-        setTokens(tokens);
+        try {
+          const tokens = await fetchTokens({
+            user: connectedAddress, //"0xDC2a4bF46Ef158f86274C02Bd7f027f31Da9EbC1", //
+          });
+          console.log("tokens", tokens);
+          setTokens(tokens);
+        } catch (e) {
+          setTokens([])
+        }
       })();
     }
   }, [connectedAddress, isConnected]);

@@ -19,11 +19,14 @@ interface PopoverProps {
   children: React.ReactNode;
   token: Token;
   contractId: string;
-  setContractId: Dispatch<SetStateAction<string>>;
+  tariff: any;
 }
-function Popover({ children, token, contractId, setContractId }: PopoverProps) {
+function Popover({ children, token, contractId: _contractId, tariff: _tariff }: PopoverProps) {
   const [tokenBoundAccount, setTokenBoundAccount] = useState("");
   const [open, setOpen] = useState(false);
+
+  const [tariff, setTariff] = useState(_tariff);
+  const [contractId, setContractId] = useState(_contractId);
 
   const { data: walletClient } = useWalletClient();
 
@@ -46,34 +49,56 @@ function Popover({ children, token, contractId, setContractId }: PopoverProps) {
     })();
   }, [tokenBoundClient, token.id]);
 
-  //encode _setcontractId function
-  const encodedSetContractIdFuctionData = encodeFunctionData({
-    abi: ABI,
-    functionName: "_setContractId",
-    args: [token.id, contractId],
-  });
-
   const handleClick = async () => {
     const loading = notification.loading(<p>Executing transaction</p>);
     try {
-      const txhash = await tokenBoundClient.execute({
-        account: tokenBoundAccount as `0x${string}`,
-        to: "0x2b3997D82C836bd33C89e20fBaEF96CA99F1B24A",
-        value: BigInt(0),
-        data: encodedSetContractIdFuctionData,
-      });
+      if (contractId) {
+        const encodedSetContractIdFuctionData = encodeFunctionData({
+          abi: ABI,
+          functionName: "_setContractId",
+          args: [token.id, contractId],
+        });
+        const txhash = await tokenBoundClient.execute({
+          account: tokenBoundAccount as `0x${string}`,
+          to: "0x2b3997D82C836bd33C89e20fBaEF96CA99F1B24A",
+          value: BigInt(0),
+          data: encodedSetContractIdFuctionData,
+        });
 
-      const reciept = await PublicClient.waitForTransactionReceipt({
-        hash: txhash,
-      });
+        const reciept = await PublicClient.waitForTransactionReceipt({
+          hash: txhash,
+        });
 
-      if (reciept.status === "reverted") {
-        throw Error("Tx reverted");
+        if (reciept.status === "reverted") {
+          throw Error("Tx reverted");
+        }
+        notification.remove(loading);
+        notification.success(<p className={`text-green-500`}>Transaction Successfull</p>);
+        setOpen(false);
+        setContractId("");
       }
-      notification.remove(loading);
-      notification.success(<p className={`text-green-500`}>Transaction Successfull</p>);
-      setOpen(false);
-      setContractId("");
+      if(tariff && _tariff !== tariff) {
+        const encodedSetTariffFuctionData = encodeFunctionData({
+          abi: ABI,
+          functionName: "_setTariff",
+          args: [token.id, tariff],
+        });
+        const tariffHash = await tokenBoundClient.execute({
+          account: tokenBoundAccount as `0x${string}`,
+          to: "0x2b3997D82C836bd33C89e20fBaEF96CA99F1B24A",
+          value: BigInt(0),
+          data: encodedSetTariffFuctionData,
+        });
+
+        const reciept = await PublicClient.waitForTransactionReceipt({
+          hash: tariffHash,
+        });
+
+        if (reciept.status === "reverted") {
+          throw Error("tariff change transaction reverted");
+        }
+        notification.success(<p className={`text-green-500`}>Tariff updated Successfully</p>);
+      }
     } catch (e) {
       notification.remove(loading);
       notification.error(<p className={`text-red-500`}>Transaction Failed</p>);
@@ -82,8 +107,9 @@ function Popover({ children, token, contractId, setContractId }: PopoverProps) {
     }
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setContractId(value);
+    const { value, name } = e.target;
+    if(name === 'tariff') setTariff(value);
+    if (name === 'contractId') setContractId(value);
   };
   return (
     <AlertDialog.Root open={open} onOpenChange={setOpen}>
@@ -115,7 +141,7 @@ function Popover({ children, token, contractId, setContractId }: PopoverProps) {
               height={200}
             />
 
-            <div className={`flex items-center w-full justify-center`}>
+            <div className={`flex items-center w-full justify-start pb-3`}>
               <div className={`relative w-[90%] h-[35px]`}>
                 <input
                   name="contractId"
@@ -141,8 +167,27 @@ function Popover({ children, token, contractId, setContractId }: PopoverProps) {
                 <ArrowTopRightOnSquareIcon width={20} height={20} />
               </Link>
             </div>
+            <div className={`flex items-center w-full justify-start`}>
+              <div className={`relative w-[90%] h-[35px]`}>
+                <input
+                  name="tariff"
+                  type="number"
+                  onChange={handleChange}
+                  value={tariff}
+                  // defaultValue={contractId}
+                  className={`w-full block mx-auto outline-none peer placeholder:text-transparent text-white border-b border-neutral-300 bg-transparent px-2 h-[35px]`}
+                  placeholder="Enter your contract ID"
+                />
+                <label
+                  htmlFor="tariff"
+                  className="absolute left-0 top-0 ml-1 px-1 -translate-y-3 text-white/60 text-sm duration-100 ease-linear peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-focus:ml-1 font-light peer-focus:-translate-y-3 peer-focus:px-1 peer-focus:text-sm"
+                >
+                  Tariff
+                </label>
+              </div>
+            </div>
             <button
-              disabled={!contractId}
+              disabled={!contractId && !tariff}
               onClick={handleClick}
               type="button"
               className={`bg-[#385183] h-[35px] flex hover:opacity-[0.7] text-white disabled:opacity-[0.5] justify-center items-center w-[120px] rounded-[6px] mx-auto`}
